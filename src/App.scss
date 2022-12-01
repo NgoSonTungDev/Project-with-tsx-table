@@ -1,0 +1,46 @@
+.container {
+  width: 100%;
+  height: auto;
+  background-color: #333;
+  padding-bottom: 20px;
+  .container_top_text {
+    text-align: center;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 30px;
+  }
+  .container_body_table {
+    width: 80%;
+    height: auto;
+
+    background-color: #fff;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+table {
+  border: 1px solid lightgray;
+  width: 100%;
+}
+
+tbody {
+  border-bottom: 1px solid lightgray;
+}
+
+th {
+  border-bottom: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+}
+
+tfoot {
+  color: gray;
+}
+
+tfoot th {
+  font-weight: normal;
+}
+
+tbody tr td {
+  border: 1px solid lightgray;
+}
