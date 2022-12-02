@@ -1,13 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { Id } from "@reduxjs/toolkit/dist/tsHelpers";
 import { productApi } from "../../client/productApi";
-import { IProduct } from "../../interface";
+import { IDataApi, ImMonitors } from "../../interface";
 
-export const getProducts = createAsyncThunk<IProduct[], string>(
+export const getProducts = createAsyncThunk<IDataApi, number>(
   "product/getProducts",
-  async (name, { rejectWithValue }) => {
+  async (page, { rejectWithValue }) => {
     try {
-      const response = await productApi.getProducts(name);
+      const response = await productApi.getProducts(page);
       return response.data;
     } catch (error) {
       return rejectWithValue(error);
@@ -15,7 +14,7 @@ export const getProducts = createAsyncThunk<IProduct[], string>(
   }
 );
 
-export const createProduct = createAsyncThunk<IProduct, IProduct>(
+export const createProduct = createAsyncThunk<ImMonitors, ImMonitors>(
   "product/createProduct",
   async (data, { rejectWithValue }) => {
     try {
@@ -27,7 +26,7 @@ export const createProduct = createAsyncThunk<IProduct, IProduct>(
   }
 );
 
-export const getByIdProduct = createAsyncThunk<IProduct, string>(
+export const getByIdProduct = createAsyncThunk<ImMonitors, string>(
   "product/getByIdProduct",
   async (id, { rejectWithValue }) => {
     try {
@@ -39,7 +38,7 @@ export const getByIdProduct = createAsyncThunk<IProduct, string>(
   }
 );
 
-export const updateProduct = createAsyncThunk<IProduct, IProduct>(
+export const updateProduct = createAsyncThunk<ImMonitors, ImMonitors>(
   "product/updateProduct",
   async (data, { rejectWithValue }) => {
     try {
@@ -51,7 +50,7 @@ export const updateProduct = createAsyncThunk<IProduct, IProduct>(
   }
 );
 
-export const deleteProduct = createAsyncThunk<IProduct, string>(
+export const deleteProduct = createAsyncThunk<ImMonitors, string>(
   "product/deleteProduct",
   async (id, { rejectWithValue }) => {
     try {

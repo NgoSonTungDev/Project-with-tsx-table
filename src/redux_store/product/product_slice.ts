@@ -1,19 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IProduct } from "../../interface";
+import { IDataApi, ImMonitors } from "../../interface";
 import {
   createProduct,
-  getProducts,
   deleteProduct,
   getByIdProduct,
+  getProducts,
   updateProduct,
 } from "./product_action";
 
 interface IState {
-  data: IProduct[];
+  data: IDataApi;
 }
 
 const initialState: IState = {
-  data: [],
+  data: {
+    ok: true,
+    items: [],
+    pageSize: 0,
+    total: 0,
+    length: 0,
+    pageNumber: 0,
+  },
 };
 
 const productSlice = createSlice({
@@ -21,7 +28,7 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     resetState: (state) => {
-      state.data = initialState.data;
+      // state.data = initialState.items;
       // state.loading = initialState.loading;
       // state.error = initialState.error;
     },
@@ -32,19 +39,19 @@ const productSlice = createSlice({
     });
 
     builder.addCase(createProduct.fulfilled, (state, action) => {
-      state.data.unshift(action.payload);
-    });
-
-    builder.addCase(deleteProduct.fulfilled, (state, action) => {
-      state.data = [action.payload];
+      state.data.items.unshift(action.payload);
     });
 
     builder.addCase(getByIdProduct.fulfilled, (state, action) => {
-      state.data = [action.payload];
+      state.data.items = [action.payload];
     });
 
     builder.addCase(updateProduct.fulfilled, (state, action) => {
-      state.data = [action.payload];
+      state.data.items = [action.payload];
+    });
+
+    builder.addCase(deleteProduct.fulfilled, (state, action) => {
+      state.data.items = [action.payload];
     });
   },
 });

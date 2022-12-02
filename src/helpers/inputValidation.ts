@@ -1,10 +1,18 @@
 import * as yup from "yup";
 
 export const validationInput = yup.object({
-  id: yup.string().required("ID không được bỏ trống"),
-  name: yup.string().required("Name không được bỏ trống").min(5),
-  avatar: yup.string().required("Avatar không được bỏ trống").min(5),
-  type: yup.string().required("Type không được bỏ trống").min(5),
-  description: yup.string().required("Description không được bỏ trống").min(5),
-  price: yup.number().required("Price không được bỏ trống").min(5),
+  id: yup.number(),
+  name: yup.string().min(5),
+  type: yup.string().min(5),
+  overVoltage: yup.number().nullable(),
+  underVoltage: yup.number().nullable(),
+  phaseLoss: yup.number().nullable(),
+  phaseUnbalanced: yup.number().nullable(),
+  overLoad: yup.number().nullable(),
+  cosPhi: yup.number().nullable(),
+  THDi: yup.number().nullable(),
+  overFlow: yup.number().nullable(),
+  underFlow: yup.number().nullable(),
+  overPressure: yup.number().nullable(),
+  underPressure: yup.number().nullable(),
 });

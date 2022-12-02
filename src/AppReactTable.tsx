@@ -3,6 +3,23 @@ import React, { useEffect, useState } from "react";
 import "./App.scss";
 import NavbarComponent from "./components/navbar/navbar";
 import useGetStatus from "./hooks/useGetStatus";
+
+import { resetState } from "./redux_store/product/product_slice";
+import { useAppDispatch, useAppSelector } from "./redux_store/store";
+import Backdrop from "@mui/material/Backdrop";
+import Box from "@mui/material/Box";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
+import { ImMonitors } from "./interface";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { validationInput } from "./helpers/inputValidation";
+import FormInput from "./FormInput";
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import Typography from "@mui/material/Typography";
+import queryString from "query-string";
 import {
   createColumnHelper,
   flexRender,
@@ -12,32 +29,19 @@ import {
 
 import {
   createProduct,
-  getProducts,
   deleteProduct,
   getByIdProduct,
+  getProducts,
   updateProduct,
 } from "./redux_store/product/product_action";
-import { resetState } from "./redux_store/product/product_slice";
-import { useAppDispatch, useAppSelector } from "./redux_store/store";
-import Backdrop from "@mui/material/Backdrop";
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
-import Fade from "@mui/material/Fade";
-import Typography from "@mui/material/Typography";
-import { IProduct } from "./interface";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { validationInput } from "./helpers/inputValidation";
-import FormInput from "./FormInput";
-import { isAwaitExpression } from "typescript";
 
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 500,
-  height: 400,
+  width: "70%",
+  height: 450,
   bgcolor: "background.paper",
   border: "2px solid #000",
   justifyContent: "space-between",
@@ -46,12 +50,20 @@ const style = {
 };
 
 const defaultValues = {
-  id: "",
+  id: 0,
   name: "",
-  avatar: "",
-  description: "",
   type: "",
-  price: 0,
+  overVoltage: 0,
+  underVoltage: 0,
+  phaseLoss: 0,
+  phaseUnbalanced: 0,
+  overLoad: 0,
+  overFlow: 0,
+  underFlow: 0,
+  overPressure: 0,
+  underPressure: 0,
+  cosPhi: 0,
+  THDi: 0,
 };
 
 function AppReactTable() {
@@ -60,16 +72,22 @@ function AppReactTable() {
   const { data } = useAppSelector((state) => state.product);
   const [loading, error] = useGetStatus("getProducts");
   const [loadingCreate, errorCreate] = useGetStatus("createProduct");
-  const columnHelper = createColumnHelper<IProduct>();
+  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const columnHelper = createColumnHelper<ImMonitors>();
   const dispatch = useAppDispatch();
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const parsed = queryString.parse(location.search);
+  const totalPage = Math.floor(data.total / data.pageSize + 1);
 
-  const { control, handleSubmit, reset, setValue } = useForm<IProduct>({
+  const { control, handleSubmit, reset } = useForm<ImMonitors>({
     defaultValues,
     resolver: yupResolver(validationInput),
   });
+  console.log(parsed);
 
   const columns = [
     columnHelper.accessor("id", {
@@ -81,20 +99,48 @@ function AppReactTable() {
       cell: (info) => info.renderValue(),
       footer: (info) => info.column.id,
     }),
-    columnHelper.accessor("avatar", {
-      header: () => <span>Avatar</span>,
-      footer: (info) => info.column.id,
-    }),
     columnHelper.accessor("type", {
-      header: "Type",
+      header: () => <span>Type</span>,
       footer: (info) => info.column.id,
     }),
-    columnHelper.accessor("description", {
-      header: "Description",
+    columnHelper.accessor("overVoltage", {
+      header: "OverVoltage",
       footer: (info) => info.column.id,
     }),
-    columnHelper.accessor("price", {
-      header: "Price",
+    columnHelper.accessor("underVoltage", {
+      header: "UnderVoltage",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("phaseLoss", {
+      header: "PhaseLoss",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("phaseUnbalanced", {
+      header: "PhaseUnbalanced",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("overLoad", {
+      header: "OverLoad",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("overFlow", {
+      header: "OverFlow",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("underFlow", {
+      header: "UnderFlow",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("overPressure", {
+      header: "OverPressure",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("cosPhi", {
+      header: "CosPhi",
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor("THDi", {
+      header: "THDi",
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor("id", {
@@ -114,7 +160,7 @@ function AppReactTable() {
             }}
             onClick={async () => {
               await dispatch(deleteProduct(String(info.row._valuesCache.id)));
-              await dispatch(getProducts(""));
+              await dispatch(getProducts(page));
             }}
           >
             Delete
@@ -177,33 +223,46 @@ function AppReactTable() {
     }),
   ];
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const handleChange = async (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    await dispatch(getProducts(value));
+    setPage(value);
+    searchParams.set("page", String(value));
+    navigate({
+      pathname: "/",
+      search: searchParams.toString(),
+    });
+  };
 
-  const handleUpdate = async (id: string) => {
-    const found = await data.find((element) => element.id === id);
+  const handleUpdate = async (id: number) => {
+    const found = await data.items.find((element) => element.id === id);
     reset(found);
     handleOpen();
   };
 
-  const customHandleSubmit = (data: IProduct) => {
+  const table = useReactTable({
+    data: data.items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const customHandleSubmit = (data: ImMonitors) => {
     dispatch(createProduct(data));
     handleClose();
-    reset();
+    dispatch(getProducts(page));
   };
 
-  const customHandleSubmitUpdate = (data: IProduct) => {
+  const customHandleSubmitUpdate = (data: ImMonitors) => {
     dispatch(updateProduct(data));
     handleClose();
     reset();
-    dispatch(getProducts(""));
+    dispatch(getProducts(page));
   };
 
   useEffect(() => {
-    dispatch(getProducts(""));
+    dispatch(getProducts(Number(parsed.page)));
   }, []);
 
   return (
@@ -216,9 +275,10 @@ function AppReactTable() {
           variant="contained"
           loading={loadingCreate}
           onClick={() => {
-            reset();
+            reset(defaultValues);
             handleOpen();
             setCheck(true);
+            setPage(1);
           }}
         >
           Thêm
@@ -230,7 +290,7 @@ function AppReactTable() {
         ) : error ? (
           <span>
             Co loi thu lai{" "}
-            <button onClick={() => dispatch(getProducts(""))}>Thu lai</button>
+            <button onClick={() => dispatch(getProducts(page))}>Thu lai</button>
           </span>
         ) : (
           <table>
@@ -266,6 +326,19 @@ function AppReactTable() {
             </tbody>
           </table>
         )}
+        <Stack
+          spacing={1}
+          sx={{
+            padding: "20px",
+            marginLeft: "40%",
+          }}
+        >
+          <Pagination
+            count={totalPage}
+            page={Number(parsed.page)}
+            onChange={handleChange}
+          />
+        </Stack>
       </div>
       {check === true ? (
         <Modal
@@ -298,14 +371,54 @@ function AppReactTable() {
                   <div style={{ width: "100%" }}>
                     <FormInput control={control} name="id" label="id" />
                     <FormInput control={control} name="name" label="name" />
-                    <FormInput control={control} name="avatar" label="avatar" />
+                    <FormInput control={control} name="type" label="type" />
                     <FormInput
                       control={control}
-                      name="description"
-                      label="description"
+                      name="overVoltage"
+                      label="overVoltage"
                     />
-                    <FormInput control={control} name="type" label="type" />
-                    <FormInput control={control} name="price" label="price" />
+                    <FormInput
+                      control={control}
+                      name="underVoltage"
+                      label="underVoltage"
+                    />
+                    <FormInput
+                      control={control}
+                      name="phaseLoss"
+                      label="phaseLoss"
+                    />
+                    <FormInput
+                      control={control}
+                      name="phaseUnbalanced"
+                      label="phaseUnbalanced"
+                    />
+                    <FormInput
+                      control={control}
+                      name="overLoad"
+                      label="overLoad"
+                    />
+                    <FormInput control={control} name="cosPhi" label="cosPhi" />
+                    <FormInput control={control} name="THDi" label="THDi" />
+                    <FormInput
+                      control={control}
+                      name="overFlow"
+                      label="overFlow"
+                    />
+                    <FormInput
+                      control={control}
+                      name="underFlow"
+                      label="underFlow"
+                    />
+                    <FormInput
+                      control={control}
+                      name="overPressure"
+                      label="overPressure"
+                    />
+                    <FormInput
+                      control={control}
+                      name="underPressure"
+                      label="underPressure"
+                    />
                   </div>
                 </Typography>
                 <Typography>
@@ -354,22 +467,63 @@ function AppReactTable() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Chỉnh sửa
+                  Chinh sua
                 </Typography>
                 <Typography id="transition-modal-description" sx={{ mt: 2 }}>
                   <div style={{ width: "100%" }}>
                     <FormInput control={control} name="id" label="id" />
                     <FormInput control={control} name="name" label="name" />
-                    <FormInput control={control} name="avatar" label="avatar" />
+                    <FormInput control={control} name="type" label="type" />
                     <FormInput
                       control={control}
-                      name="description"
-                      label="description"
+                      name="overVoltage"
+                      label="overVoltage"
                     />
-                    <FormInput control={control} name="type" label="type" />
-                    <FormInput control={control} name="price" label="price" />
+                    <FormInput
+                      control={control}
+                      name="underVoltage"
+                      label="underVoltage"
+                    />
+                    <FormInput
+                      control={control}
+                      name="phaseLoss"
+                      label="phaseLoss"
+                    />
+                    <FormInput
+                      control={control}
+                      name="phaseUnbalanced"
+                      label="phaseUnbalanced"
+                    />
+                    <FormInput
+                      control={control}
+                      name="overLoad"
+                      label="overLoad"
+                    />
+                    <FormInput control={control} name="cosPhi" label="cosPhi" />
+                    <FormInput control={control} name="THDi" label="THDi" />
+                    <FormInput
+                      control={control}
+                      name="overFlow"
+                      label="overFlow"
+                    />
+                    <FormInput
+                      control={control}
+                      name="underFlow"
+                      label="underFlow"
+                    />
+                    <FormInput
+                      control={control}
+                      name="overPressure"
+                      label="overPressure"
+                    />
+                    <FormInput
+                      control={control}
+                      name="underPressure"
+                      label="underPressure"
+                    />
                   </div>
                 </Typography>
+
                 <Typography>
                   <button
                     style={{

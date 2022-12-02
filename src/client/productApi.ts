@@ -1,24 +1,24 @@
 import { instance } from "./index";
-import { IProduct } from "../interface";
+import { IDataApi, ImMonitors } from "../interface";
 
 export const productApi = {
-  createProduct: (data: IProduct) => {
-    return instance.post<IProduct>("/products", data);
+  createProduct: (data: ImMonitors) => {
+    return instance.post<ImMonitors>("/monitors", data);
   },
 
-  getProducts: (name: any) => {
-    return instance.get<IProduct[]>(`/products?search=${name}`, name);
+  getProducts: (value: number) => {
+    return instance.get<IDataApi>(`/monitors`, { params: { page: value } });
   },
 
   getByIdProduct: (id: any) => {
-    return instance.get<IProduct>(`/products/${id}`, id);
+    return instance.get<ImMonitors>(`/monitors/${id}`, id);
+  },
+
+  updateProduct: (data: ImMonitors) => {
+    return instance.put<ImMonitors>(`/monitors/${data.id}`, data);
   },
 
   deleteProduct: (id: any) => {
-    return instance.delete<IProduct>(`/products/${id}`, id);
-  },
-
-  updateProduct: (data: IProduct) => {
-    return instance.put<IProduct>(`/products/${data.id}`, data);
+    return instance.delete<ImMonitors>(`/monitors/${id}`, id);
   },
 };

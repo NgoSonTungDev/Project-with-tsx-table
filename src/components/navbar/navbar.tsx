@@ -57,7 +57,7 @@ const NavbarComponent = () => {
   const dispatch = useAppDispatch();
 
   const handleSearch = async () => {
-    await dispatch(getProducts(search));
+    // await dispatch(getProducts(search));
   };
 
   return (

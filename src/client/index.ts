@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const instance = axios.create({
-  baseURL: "https://6386df2de399d2e473eed31d.mockapi.io/",
+  baseURL: "http://localhost:5000/api",
   timeout: 1000,
   headers: { "X-Custom-Header": "foobar" },
 });

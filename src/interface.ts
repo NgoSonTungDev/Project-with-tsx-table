@@ -1,8 +1,25 @@
-export interface IProduct {
-  id: string;
+export interface ImMonitors {
+  id: number;
   name: string;
-  avatar: string;
-  description: string;
   type: string;
-  price: number;
+  overVoltage: number;
+  underVoltage: number;
+  phaseLoss: number;
+  phaseUnbalanced: number;
+  overLoad: number;
+  overFlow: number;
+  underFlow: number;
+  overPressure: number;
+  underPressure: number;
+  cosPhi: number;
+  THDi: number;
+}
+
+export interface IDataApi {
+  ok: boolean;
+  items: ImMonitors[];
+  pageSize: number;
+  total: number;
+  length: number;
+  pageNumber: number;
 }
