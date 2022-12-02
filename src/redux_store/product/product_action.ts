@@ -1,12 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { productApi } from "../../client/productApi";
-import { IDataApi, ImMonitors } from "../../interface";
+import { IDataApi, ImMonitors, ISearch } from "../../interface";
 
-export const getProducts = createAsyncThunk<IDataApi, number>(
+export const getProducts = createAsyncThunk<IDataApi, ISearch>(
   "product/getProducts",
-  async (page, { rejectWithValue }) => {
+  async (value, { rejectWithValue }) => {
     try {
-      const response = await productApi.getProducts(page);
+      const response = await productApi.getProducts(value);
       return response.data;
     } catch (error) {
       return rejectWithValue(error);

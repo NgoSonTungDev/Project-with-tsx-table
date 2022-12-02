@@ -68,26 +68,28 @@ const defaultValues = {
 
 function AppReactTable() {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [check, setCheck] = useState(true);
   const { data } = useAppSelector((state) => state.product);
   const [loading, error] = useGetStatus("getProducts");
   const [loadingCreate, errorCreate] = useGetStatus("createProduct");
   const [page, setPage] = useState(1);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
+  const totalPage = Math.floor(data.total / data.limit + 1);
+  const columnHelper = createColumnHelper<ImMonitors>();
+
   const navigate = useNavigate();
   const location = useLocation();
-  const columnHelper = createColumnHelper<ImMonitors>();
-  const dispatch = useAppDispatch();
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const parsed = queryString.parse(location.search);
-  const totalPage = Math.floor(data.total / data.pageSize + 1);
 
   const { control, handleSubmit, reset } = useForm<ImMonitors>({
     defaultValues,
     resolver: yupResolver(validationInput),
   });
-  console.log(parsed);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const columns = [
     columnHelper.accessor("id", {
@@ -160,7 +162,12 @@ function AppReactTable() {
             }}
             onClick={async () => {
               await dispatch(deleteProduct(String(info.row._valuesCache.id)));
-              await dispatch(getProducts(page));
+              await dispatch(
+                getProducts({
+                  page: page,
+                  nameSearch: "",
+                })
+              );
             }}
           >
             Delete
@@ -223,13 +230,30 @@ function AppReactTable() {
     }),
   ];
 
+  const callbackFunction = (value: string) => {
+    setPage(1);
+    setSearch(value);
+    searchParams.set("page", String(1));
+    searchParams.set("q", search);
+    navigate({
+      pathname: "/",
+      search: searchParams.toString(),
+    });
+  };
+
   const handleChange = async (
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    await dispatch(getProducts(value));
-    setPage(value);
+    await dispatch(
+      getProducts({
+        page: value,
+        nameSearch: search,
+      })
+    );
+    await setPage(value);
     searchParams.set("page", String(value));
+    searchParams.set("q", search);
     navigate({
       pathname: "/",
       search: searchParams.toString(),
@@ -237,13 +261,13 @@ function AppReactTable() {
   };
 
   const handleUpdate = async (id: number) => {
-    const found = await data.items.find((element) => element.id === id);
+    const found = await data.data.find((element) => element.id === id);
     reset(found);
     handleOpen();
   };
 
   const table = useReactTable({
-    data: data.items,
+    data: data.data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -251,23 +275,38 @@ function AppReactTable() {
   const customHandleSubmit = (data: ImMonitors) => {
     dispatch(createProduct(data));
     handleClose();
-    dispatch(getProducts(page));
+    dispatch(
+      getProducts({
+        page: page,
+        nameSearch: "",
+      })
+    );
   };
 
   const customHandleSubmitUpdate = (data: ImMonitors) => {
     dispatch(updateProduct(data));
     handleClose();
     reset();
-    dispatch(getProducts(page));
+    dispatch(
+      getProducts({
+        page: page,
+        nameSearch: "",
+      })
+    );
   };
 
   useEffect(() => {
-    dispatch(getProducts(Number(parsed.page)));
+    dispatch(
+      getProducts({
+        page: Number(parsed.page),
+        nameSearch: "",
+      })
+    );
   }, []);
 
   return (
     <div className="container">
-      <NavbarComponent />
+      <NavbarComponent callbackFunction={callbackFunction} pageNumber={page} />
 
       <div className="container_top_text">
         <p style={{ marginBottom: "0" }}>Practice Typescript</p>
@@ -290,7 +329,18 @@ function AppReactTable() {
         ) : error ? (
           <span>
             Co loi thu lai{" "}
-            <button onClick={() => dispatch(getProducts(page))}>Thu lai</button>
+            <button
+              onClick={() =>
+                dispatch(
+                  getProducts({
+                    page: page,
+                    nameSearch: "",
+                  })
+                )
+              }
+            >
+              Thu lai
+            </button>
           </span>
         ) : (
           <table>
@@ -326,19 +376,21 @@ function AppReactTable() {
             </tbody>
           </table>
         )}
-        <Stack
-          spacing={1}
-          sx={{
-            padding: "20px",
-            marginLeft: "40%",
-          }}
-        >
-          <Pagination
-            count={totalPage}
-            page={Number(parsed.page)}
-            onChange={handleChange}
-          />
-        </Stack>
+        {!error && (
+          <Stack
+            spacing={1}
+            sx={{
+              padding: "20px",
+              marginLeft: "40%",
+            }}
+          >
+            <Pagination
+              count={totalPage}
+              page={Number(parsed.page)}
+              onChange={handleChange}
+            />
+          </Stack>
+        )}
       </div>
       {check === true ? (
         <Modal

@@ -16,10 +16,13 @@ export interface ImMonitors {
 }
 
 export interface IDataApi {
-  ok: boolean;
-  items: ImMonitors[];
-  pageSize: number;
+  data: ImMonitors[];
+  limit: number;
   total: number;
-  length: number;
-  pageNumber: number;
+  page: number;
+}
+
+export interface ISearch {
+  nameSearch: string;
+  page: number;
 }

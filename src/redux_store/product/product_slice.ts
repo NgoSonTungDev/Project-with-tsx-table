@@ -14,12 +14,10 @@ interface IState {
 
 const initialState: IState = {
   data: {
-    ok: true,
-    items: [],
-    pageSize: 0,
+    data: [],
+    limit: 0,
     total: 0,
-    length: 0,
-    pageNumber: 0,
+    page: 0,
   },
 };
 
@@ -39,19 +37,19 @@ const productSlice = createSlice({
     });
 
     builder.addCase(createProduct.fulfilled, (state, action) => {
-      state.data.items.unshift(action.payload);
+      state.data.data.unshift(action.payload);
     });
 
     builder.addCase(getByIdProduct.fulfilled, (state, action) => {
-      state.data.items = [action.payload];
+      state.data.data = [action.payload];
     });
 
     builder.addCase(updateProduct.fulfilled, (state, action) => {
-      state.data.items = [action.payload];
+      state.data.data = [action.payload];
     });
 
     builder.addCase(deleteProduct.fulfilled, (state, action) => {
-      state.data.items = [action.payload];
+      state.data.data = [action.payload];
     });
   },
 });

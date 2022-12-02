@@ -1,13 +1,15 @@
 import { instance } from "./index";
-import { IDataApi, ImMonitors } from "../interface";
+import { IDataApi, ImMonitors, ISearch } from "../interface";
 
 export const productApi = {
   createProduct: (data: ImMonitors) => {
     return instance.post<ImMonitors>("/monitors", data);
   },
 
-  getProducts: (value: number) => {
-    return instance.get<IDataApi>(`/monitors`, { params: { page: value } });
+  getProducts: (value: ISearch) => {
+    return instance.get<IDataApi>(`/monitors`, {
+      params: { page: value.page, q: value.nameSearch },
+    });
   },
 
   getByIdProduct: (id: any) => {

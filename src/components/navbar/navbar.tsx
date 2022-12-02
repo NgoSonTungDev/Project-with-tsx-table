@@ -52,12 +52,23 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const NavbarComponent = () => {
+interface Props {
+  pageNumber: number;
+  callbackFunction(name: string): void;
+}
+
+const NavbarComponent: React.FC<Props> = ({ callbackFunction, pageNumber }) => {
   const [search, setSearch] = useState("");
   const dispatch = useAppDispatch();
 
   const handleSearch = async () => {
-    // await dispatch(getProducts(search));
+    await dispatch(
+      getProducts({
+        page: 1,
+        nameSearch: search,
+      })
+    );
+    callbackFunction(search);
   };
 
   return (
